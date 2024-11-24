@@ -1,0 +1,6 @@
+githubConfigUrl: "https://github.com/CankutER/SWE-599"
+githubConfigSecret: github-pat
+maxRunners: 3
+minRunners: 1
+containerMode:
+   type: "dind"
