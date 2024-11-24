@@ -11,7 +11,6 @@ terraform {
     }
      helm = {
       source = "hashicorp/helm"
-      version = "2.16.1"
     }
   }
 }
@@ -57,10 +56,14 @@ resource "kind_cluster" "default" {
 
     node {
       role = "worker"
+      labels = {
+        "sonarqube" = "true"
+      }
+      
     }
 
     node {
-      role = "worker"   
+      role = "worker" 
     }
   }
 }
@@ -115,6 +118,19 @@ resource "helm_release" "actions_runner_set" {
   values = [file("arc_runner_set_values.yaml")]
 
   depends_on = [kind_cluster.default,helm_release.actions_runner_controller,kubernetes_secret.github_pat]
+}
+
+resource "helm_release" "sonarqube" {
+  name       = "sonarqube"
+  repository = "https://SonarSource.github.io/helm-chart-sonarqube"
+  chart      = "sonarqube"
+
+  namespace        = var.sonarqube_namespace
+  create_namespace = true
+
+  values = [file("sonarqube-values.yaml")]
+
+  depends_on = [kind_cluster.default]
 }
 
 

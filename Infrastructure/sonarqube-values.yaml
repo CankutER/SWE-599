@@ -1,0 +1,15 @@
+nodeSelector: 
+  sonarqube: "true"
+
+ingress:
+  enabled: true
+  # Used to create an Ingress record.
+  hosts:
+    - name: sonarqube.local.com
+      # Different clouds or configurations might need /* as the default path
+      path: /
+      # For additional control over serviceName and servicePort
+      # serviceName: someService
+      # servicePort: somePort
+  annotations: 
+    nginx.ingress.kubernetes.io/proxy-body-size: "256m"

@@ -23,3 +23,8 @@ variable "github_pat" {
   default     = "enter your github personal token"
 }
 
+variable "sonarqube_namespace" {
+  type        = string
+  description = "Namespace for GitHub actions resources"
+  default     = "sonarqube-namespace"
+}
