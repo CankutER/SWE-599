@@ -14,11 +14,11 @@ jobs:
   build-and-push-image:
     runs-on: actions-runner-set
     steps:
-    - name: set lower case owner name
-      env:
-        ACTOR: '${{ github.actor}}'
-      run: |
-        echo "ACTOR_LC=${ACTOR,,}" >>${GITHUB_ENV}
+      - name: set lower case owner name
+        env:
+          ACTOR: '${{ github.actor}}'
+        run: |
+          echo "ACTOR_LC=${ACTOR,,}" >>${GITHUB_ENV}
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Log in to the Container registry
