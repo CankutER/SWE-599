@@ -31,8 +31,8 @@ jobs:
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
-          context: ./../../App/Communitter
-          file: ./../App/Communitter/API.Dockerfile
+          context: ./App/Communitter
+          file: ./App/Communitter/API.Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest
           
