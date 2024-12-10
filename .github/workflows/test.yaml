@@ -14,6 +14,11 @@ jobs:
   build-and-push-image:
     runs-on: actions-runner-set
     steps:
+    - name: set lower case owner name
+      env:
+        ACTOR: '${{ github.actor}}'
+      run: |
+        echo "ACTOR_LC=${ACTOR,,}" >>${GITHUB_ENV}
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Log in to the Container registry
@@ -29,7 +34,7 @@ jobs:
           context: ./../App/Communitter
           file: ./../App/Communitter/API.Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.ACTOR }}/${{ env.IMAGE_NAME }}:latest
           
       
       
