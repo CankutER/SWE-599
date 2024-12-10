@@ -1,5 +1,7 @@
 nodeSelector: 
   sonarqube: "true"
+image:
+  tag: lts-community
 
 ingress:
   enabled: true

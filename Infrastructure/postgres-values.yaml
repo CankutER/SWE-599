@@ -1,0 +1,8 @@
+auth:
+  postgresPassword: "postgres"
+  database: "communitter"
+global:
+  postgresql:
+    service:
+      ports:
+        postgresql: "5433"

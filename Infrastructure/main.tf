@@ -51,6 +51,10 @@ resource "kind_cluster" "default" {
         container_port = 443
         host_port      = 443
       }
+       extra_port_mappings {
+        container_port = 5433
+        host_port      = 5433
+      }
       
     }
 
@@ -133,7 +137,69 @@ resource "helm_release" "sonarqube" {
   depends_on = [kind_cluster.default]
 }
 
+resource "helm_release" "postgres" {
+  name       = "postgres"
+  repository = "oci://registry-1.docker.io/bitnamicharts"
+  chart      = "postgresql"
 
+  namespace        = var.app_namespace
+  create_namespace = true
+
+  values = [file("postgres-values.yaml")]
+
+  depends_on = [kind_cluster.default]
+}
+
+data "kubernetes_service" "postgres_service" {
+  metadata {
+    name      = "${resource.helm_release.postgres.name}-postgresql" 
+    namespace = var.app_namespace
+  }
+}
+
+/*resource "kubernetes_ingress_v1" "postgres_ingress" {
+  metadata {
+    name      = "postgres-ingress"
+    namespace = var.app_namespace
+    annotations = {
+      "nginx.ingress.kubernetes.io/backend-protocol" = "TCP"
+    }
+  }
+
+  spec {
+    rule {
+      host = "postgres.local.com"
+
+      http {
+        path {
+          path     = "/"
+
+          backend {
+            service {
+              name = data.kubernetes_service.postgres_service.metadata[0].name
+              port {
+                number = 5433
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}*/
+
+/*
+resource "kubernetes_config_map" "tcp_services" {
+  metadata {
+    name      = "tcp-services"
+    namespace = "ingress-nginx" # Replace with your NGINX ingress namespace
+  }
+
+  data = {
+    "80" = "${var.app_namespace}/${data.kubernetes_service.postgres_service.metadata[0].name}:5433" # Map port 5432 to PostgreSQL service
+  }
+}
+*/
 
 /*
 resource "null_resource" "wait_for_ingress_nginx" {

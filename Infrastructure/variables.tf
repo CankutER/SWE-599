@@ -17,6 +17,12 @@ variable "actions_namespace" {
   default     = "actions-namespace"
 }
 
+variable "app_namespace" {
+  type        = string
+  description = "Namespace for app components (it will be created if needed)."
+  default     = "app"
+}
+
 variable "github_pat" {
   type        = string
   description = "Personal Access Token for Github API"
