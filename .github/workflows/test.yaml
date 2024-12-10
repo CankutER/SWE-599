@@ -34,7 +34,7 @@ jobs:
           context: ./../App/Communitter
           file: ./../App/Communitter/API.Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.ACTOR }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest
           
       
       
