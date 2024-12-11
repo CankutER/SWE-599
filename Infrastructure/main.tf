@@ -157,6 +157,139 @@ data "kubernetes_service" "postgres_service" {
   }
 }
 
+
+resource "kubernetes_secret" "ghcr_secret" {
+  depends_on = [ helm_release.postgres ]
+  metadata {
+    name      = "ghcr-secret"
+    namespace = var.app_namespace
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = base64encode(jsonencode({
+      "auths" = {
+        "ghcr.io" = {
+          "username" = "${var.github_username}"
+          "password" = "${var.github_pat}"
+          "email"    = "${var.github_email}"
+        }
+      }
+    }))
+  }
+}
+
+resource "kubernetes_deployment" "app_backend" {
+  depends_on = [ kubernetes_secret.ghcr_secret, helm_release.postgres ]
+  metadata {
+    name      = "app-backend"
+    namespace = var.app_namespace
+    labels = {
+      app = "app-backend"
+    }
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "app-backend"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "app-backend"
+        }
+      }
+
+      spec {
+        container {
+          name  = "app-backend"
+          image = "ghcr.io/${lower(var.github_username)}/app-backend:latest"
+           env {
+            name  = "db_url"
+            value = "jdbc:postgresql://${resource.helm_release.postgres.name}-postgresql:5433/communitter"
+          }
+           env {
+            name  = "db_username"
+            value = "postgres"
+          }
+
+          env {
+            name  = "db_password"
+            value = "postgres"
+          }
+          port {
+            container_port = 8080
+          }
+        }
+
+        image_pull_secrets {
+          name = kubernetes_secret.ghcr_secret.metadata[0].name
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "app_backend_service" {
+  depends_on = [ kubernetes_deployment.app_backend ]
+  metadata {
+    name      = "app-backend-service"
+    namespace = var.app_namespace
+    labels = {
+      app = "app-backend"
+    }
+  }
+
+  spec {
+    selector = {
+      app = "app-backend"
+    }
+
+    port {
+      port        = 8080
+      target_port = 8080
+    }
+
+    type = "ClusterIP"
+  }
+}
+
+resource "kubernetes_ingress" "app_backend_ingress" {
+  depends_on = [ kubernetes_service.app_backend_service ]
+  metadata {
+    name      = "app-backend-ingress"
+    namespace = var.app_namespace
+    annotations = {
+      "nginx.ingress.kubernetes.io/rewrite-target" = "/"
+    }
+  }
+
+  spec {
+    rule {
+      host = "backend.local.com"
+
+      http {
+        path {
+          path = "/"
+
+          backend {
+            service_name = kubernetes_service.app_backend_service.metadata[0].name
+            service_port = 8080
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
 /*resource "kubernetes_ingress_v1" "postgres_ingress" {
   metadata {
     name      = "postgres-ingress"

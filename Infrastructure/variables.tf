@@ -28,6 +28,17 @@ variable "github_pat" {
   description = "Personal Access Token for Github API"
   default     = "enter your github personal token"
 }
+variable "github_username" {
+  type        = string
+  description = "username for github"
+  default     = "enter your github username"
+}
+
+variable "github_email" {
+  type        = string
+  description = "email for github"
+  default     = "enter your github email"
+}
 
 variable "sonarqube_namespace" {
   type        = string
