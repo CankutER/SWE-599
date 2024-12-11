@@ -12,59 +12,63 @@ env:
 
 
 jobs:
-  build-and-push-image:
+  sonar:
+    name: Sonar
     runs-on: actions-runner-set
     steps:
-      - name: set lower case owner name
-        env:
-          ACTOR: '${{ github.actor}}'
-        run: |
-          echo "ACTOR_LC=${ACTOR,,}" >>${GITHUB_ENV}
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
-
       - name: Cache SonarQube packages
         uses: actions/cache@v1
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-
       - name: Cache Maven packages
         uses: actions/cache@v1
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-
-      - name: Sonar Scan
+      - name: Build and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=github-actions
 
-      # - name: Log in to the Container registry
-      #   uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-      #   with:
-      #     registry: ${{ env.REGISTRY }}
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GH_PAT }}
+  # build-and-push-image:
+  #   runs-on: actions-runner-set
+  #   steps:
+  #     - name: set lower case owner name
+  #       env:
+  #         ACTOR: '${{ github.actor}}'
+  #       run: |
+  #         echo "ACTOR_LC=${ACTOR,,}" >>${GITHUB_ENV}
 
-      # - name: Build and push Docker image
-      #   id: push
-      #   uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
-      #   with:
-      #     context: ./App/Communitter
-      #     file: ./App/Communitter/API.Dockerfile
-      #     push: true
-      #     tags: ${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Log in to the Container registry
+  #       uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+  #       with:
+  #         registry: ${{ env.REGISTRY }}
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GH_PAT }}
+
+  #     - name: Build and push Docker image
+  #       id: push
+  #       uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+  #       with:
+  #         context: ./App/Communitter
+  #         file: ./App/Communitter/API.Dockerfile
+  #         push: true
+  #         tags: ${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest
           
  
       
