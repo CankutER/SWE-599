@@ -168,7 +168,7 @@ resource "kubernetes_secret" "ghcr_secret" {
   type = "kubernetes.io/dockerconfigjson"
 
   data = {
-    ".dockerconfigjson" = base64encode(jsonencode({
+    ".dockerconfigjson" = jsonencode({
       "auths" = {
         "ghcr.io" = {
           "username" = "${var.github_username}"
@@ -176,7 +176,7 @@ resource "kubernetes_secret" "ghcr_secret" {
           "email"    = "${var.github_email}"
         }
       }
-    }))
+    })
   }
 }
 
@@ -260,8 +260,8 @@ resource "kubernetes_service" "app_backend_service" {
   }
 }
 
-resource "kubernetes_ingress" "app_backend_ingress" {
-  depends_on = [ kubernetes_service.app_backend_service ]
+# Kubernetes Ingress to connect to the service
+resource "kubernetes_ingress_v1" "app_backend_ingress" {
   metadata {
     name      = "app-backend-ingress"
     namespace = var.app_namespace
@@ -277,16 +277,22 @@ resource "kubernetes_ingress" "app_backend_ingress" {
       http {
         path {
           path = "/"
+          path_type = "Prefix"
 
           backend {
-            service_name = kubernetes_service.app_backend_service.metadata[0].name
-            service_port = 8080
+            service {
+              name = kubernetes_service.app_backend_service.metadata[0].name
+              port {
+                number = 8080
+              }
+            }
           }
         }
       }
     }
   }
 }
+
 
 
 
