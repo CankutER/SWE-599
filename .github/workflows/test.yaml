@@ -30,8 +30,6 @@ jobs:
           maven-version: 3.8.7
       - name: Check mvn setup
         run: mvn --version
-      - name: Compile code
-        run: mvn clean install -DskipTests -f ./App/Communitter/pom.xml
       - name: Cache SonarQube packages
         uses: actions/cache@v1
         with:
@@ -49,7 +47,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: mvn -f ./App/Communitter/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=github-actions 
+        run: mvn -f ./App/Communitter/pom.xml -DskipTests -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=github-actions 
 
   # build-and-push-image:
   #   runs-on: actions-runner-set
