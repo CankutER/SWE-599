@@ -1,5 +1,5 @@
 
-name: Create and publish a Docker image
+name: DevSecOps Pipeline for Java Spring App
 
 on:
   push:
@@ -48,7 +48,25 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: mvn -f ./App/Communitter/pom.xml -DskipTests -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=github-actions 
-
+      
+      - name: Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: /opt/jdk
+        id: Depcheck
+        with:
+          project: 'github-actions'
+          path: './App/Communitter'
+          format: 'HTML'
+          out: 'reports'
+          # args: >
+          #   --failOnCVSS 7
+          #   --enableRetired
+      - name: Upload Test results
+        uses: actions/upload-artifact@master
+        with:
+           name: Depcheck report
+           path: ${{github.workspace}}/reports
   # build-and-push-image:
   #   runs-on: actions-runner-set
   #   steps:
