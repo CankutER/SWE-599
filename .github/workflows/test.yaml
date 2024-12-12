@@ -126,7 +126,7 @@ jobs:
 
       - name: Deploy 
         run: |
-          DEPLOYMENT= $(kubectl get deployment -n app app-backend)
+          export DEPLOYMENT= $(kubectl get deployment -n app app-backend)
           if [ -z $DEPLOYMENT ] then;
             kubectl apply -f ./Infrastructure/app-backend.yaml
           else
