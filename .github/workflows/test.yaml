@@ -125,7 +125,13 @@ jobs:
         id: install
 
       - name: Deploy 
-        run: kubectl apply -f ./Infrastructure/app-backend.yaml
+        run: |
+          DEPLOYMENT= $(kubectl get deployment -n app app-backend)
+          if [ -z $DEPLOYMENT ] then;
+            kubectl apply -f ./Infrastructure/app-backend.yaml
+          else
+            kubectl rollout restart deployment -n app app-backend
+          fi
 
           
  
