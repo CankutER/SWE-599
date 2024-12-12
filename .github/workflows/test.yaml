@@ -126,10 +126,12 @@ jobs:
 
       - name: Deploy 
         run: |
-          export DEPLOYMENT=$(kubectl get deployment -n app app-backend)
-          if [ -z $DEPLOYMENT ] then;
+          export DEPLOYMENT=$(kubectl get deployment -n app app-backend --ignore-not-found)
+          if [ -z "$DEPLOYMENT" ]; then
+            echo "Deployment does not exists, creating a new one"
             kubectl apply -f ./Infrastructure/app-backend.yaml
           else
+            echo "Deployment already existing, restarting the existing one"
             kubectl rollout restart deployment -n app app-backend
           fi
 
