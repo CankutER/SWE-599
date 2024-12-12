@@ -68,7 +68,7 @@ jobs:
            name: Depcheck report
            path: ${{github.workspace}}/reports
 
-  build-and-push-scan-image:
+  image-scan-and-deploy:
     runs-on: actions-runner-set
     steps:
       - name: set lower case owner name
@@ -113,13 +113,7 @@ jobs:
           name: trivy-report
           path: trivy-report.json
           retention-days: 30 
-
-  deployment:
-    runs-on: actions-runner-set
-    steps:
-      - uses: actions/checkout@v2
-        with:
-           fetch-depth: 0 
+          
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
         id: install
