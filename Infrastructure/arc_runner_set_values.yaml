@@ -2,5 +2,8 @@ githubConfigUrl: "https://github.com/CankutER/SWE-599"
 githubConfigSecret: github-pat
 maxRunners: 3
 minRunners: 1
+template:
+   spec:
+      serviceAccountName: runner-service-account
 containerMode:
    type: "dind"

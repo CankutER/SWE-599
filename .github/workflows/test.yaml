@@ -68,50 +68,62 @@ jobs:
   #          name: Depcheck report
   #          path: ${{github.workspace}}/reports
 
-  build-and-push--scan-image:
+  # build-and-push-scan-image:
+  #   runs-on: actions-runner-set
+  #   steps:
+  #     - name: set lower case owner name
+  #       env:
+  #         ACTOR: '${{ github.actor}}'
+  #       run: |
+  #         echo "ACTOR_LC=${ACTOR,,}" >>${GITHUB_ENV}
+
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Log in to the Container registry
+  #       uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+  #       with:
+  #         registry: ${{ env.REGISTRY }}
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GH_PAT }}
+
+  #     - name: Build and push Docker image
+  #       id: push
+  #       uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+  #       with:
+  #         context: ./App/Communitter
+  #         file: ./App/Communitter/API.Dockerfile
+  #         push: true
+  #         tags: ${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest
+
+  #     - name: Run Trivy vulnerability scanner
+  #       uses: aquasecurity/trivy-action@0.28.0
+  #       with:
+  #         image-ref: '${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest'
+  #         format: 'json'
+  #         exit-code: '0'
+  #         output: trivy-report.json
+  #         ignore-unfixed: true
+  #         vuln-type: 'os,library'
+  #         severity: 'CRITICAL,HIGH'
+
+  #     - name: Upload Trivy Scan Results
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: trivy-report
+  #         path: trivy-report.json
+  #         retention-days: 30 
+
+  deployment:
     runs-on: actions-runner-set
     steps:
-      - name: set lower case owner name
-        env:
-          ACTOR: '${{ github.actor}}'
-        run: |
-          echo "ACTOR_LC=${ACTOR,,}" >>${GITHUB_ENV}
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        id: install
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Deploy 
+        run: kubectl apply -f ./Infrastructure/app-backend.yaml
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GH_PAT }}
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
-        with:
-          context: ./App/Communitter
-          file: ./App/Communitter/API.Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: '${{ env.REGISTRY }}/${{ env.ACTOR_LC }}/${{ env.IMAGE_NAME }}:latest'
-          format: 'json'
-          exit-code: '0'
-          output: trivy-report.json
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy Scan Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-report
-          path: trivy-report.json
-          retention-days: 30         
+          
  
       

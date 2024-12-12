@@ -121,7 +121,7 @@ resource "helm_release" "actions_runner_set" {
 
   values = [file("arc_runner_set_values.yaml")]
 
-  depends_on = [kind_cluster.default,helm_release.actions_runner_controller,kubernetes_secret.github_pat]
+  depends_on = [kind_cluster.default,helm_release.actions_runner_controller,kubernetes_secret.github_pat,kubernetes_service_account.runner_sa]
 }
 
 resource "helm_release" "sonarqube" {
@@ -295,6 +295,51 @@ resource "kubernetes_ingress_v1" "app_backend_ingress" {
 
 
 
+resource "kubernetes_service_account" "runner_sa" {
+  metadata {
+    name      = "runner-service-account"
+    namespace = var.actions_namespace
+  }
+  
+  depends_on = [ kind_cluster.default,helm_release.actions_runner_controller ]
+}
+
+resource "kubernetes_cluster_role" "runner_role" {
+  metadata {
+    name = "runner-cluster-role"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods"]
+    verbs      = ["*"] 
+  }
+
+  rule {
+    api_groups = ["apps"]
+    resources  = ["deployments", "replicasets"]
+    verbs      = ["*"] 
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "runner_binding" {
+  metadata {
+    name = "runner-cluster-role-binding"
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.runner_sa.metadata[0].name
+    namespace = var.actions_namespace
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.runner_role.metadata[0].name
+  }
+  depends_on = [ kubernetes_service_account.runner_sa, kubernetes_cluster_role.runner_role ]
+}
 
 /*resource "kubernetes_ingress_v1" "postgres_ingress" {
   metadata {
